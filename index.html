@@ -19,6 +19,21 @@ background:#0b1220;
 color:#fff;
 overflow-x:hidden;
 }
+   
+/* 🌍 MOVING WATERMARK (ADDED ONLY) */
+body::before{
+content:"🚚 ✈ 📦 🌍 🚛 📦 ✈ 🌐 🚚 📦 🌍 ✈ 🚛";
+position:fixed;
+font-size:70px;
+white-space:nowrap;
+top:50%;
+left:-100%;
+transform:translateY(-50%);
+opacity:0.05;
+animation:moveWatermark 20s linear infinite;
+z-index:-1;
+pointer-events:none;
+}
 
 /* HEADER */
 
@@ -302,8 +317,7 @@ Initializing worldwide shipment data...
 
 <div class="track-form">
 
-<!-- 🔥 MULTI TRACKING ENABLED (ONLY CHANGE) -->
-<input id="trackingId" placeholder="Enter Tracking ID (use comma for multiple)">
+<input id="trackingId" placeholder="Enter Tracking ID">
 
 <button onclick="trackPackage()">
 TRACK PACKAGE
@@ -321,7 +335,10 @@ TRACK PACKAGE
 
 <script>
 
-/* LIVE DASHBOARD */
+/* =========================
+   LIVE MOVING DASHBOARD
+========================= */
+
 const updates = [
 "📦 Shipment scanning in European hub...",
 "🚚 Cargo moving through Middle East corridor...",
@@ -363,7 +380,7 @@ liveIndex++;
 }
 
 /* =========================
-   TRACKING DATABASE (UNCHANGED)
+   TRACKING DATABASE
 ========================= */
 
 const trackingData = {
@@ -410,41 +427,146 @@ const trackingData = {
 
 };
 
-/* 🔥 MULTI-TRACKING LOGIC (ONLY ADDITION) */
+/* =========================
+   TRACK PACKAGE
+========================= */
+
 function trackPackage(){
 
-const input = document.getElementById("trackingId").value.trim();
-
-const ids = input.split(",").map(x => x.trim());
-
-let html = "";
-
-ids.forEach(code => {
+const code = document.getElementById("trackingId").value.trim();
 
 const data = trackingData[code];
 
 if(!data){
-html += `<tr><th colspan="2">❌ Invalid ID: ${code}</th></tr>`;
+
+alert("❌ Invalid Tracking ID");
+
 return;
+
 }
 
-html += `
-<tr><th colspan="2">📦 ${code}</th></tr>
-<tr><td>Status</td><td>● Arrived at destination airport</td></tr>
-<tr><td>Arrival</td><td>${data.arrival}</td></tr>
-<tr><td>Name</td><td>${data.receiver.name}</td></tr>
-<tr><td>Country</td><td>${data.receiver.country}</td></tr>
+document.getElementById("resultsBody").innerHTML = `
+
+<tr>
+<th colspan="2">📦 SHIPMENT DETAILS</th>
+</tr>
+
+<tr>
+<td>Status</td>
+<td style="color:#4ade80;font-weight:bold;">
+● Arrived at destination airport
+</td>
+</tr>
+
+<tr>
+<td>Arrival Date</td>
+<td>${data.arrival}</td>
+</tr>
+
+<tr>
+<th colspan="2">👤 SENDER INFORMATION</th>
+</tr>
+
+<tr>
+<td>Name</td>
+<td>${data.sender.name}</td>
+</tr>
+
+<tr>
+<td>Country</td>
+<td>${data.sender.country}</td>
+</tr>
+
+<tr>
+<td>Email</td>
+<td>${data.sender.email}</td>
+</tr>
+
+<tr>
+<td>Phone</td>
+<td>${data.sender.phone}</td>
+</tr>
+
+<tr>
+<th colspan="2">📍 RECEIVER INFORMATION</th>
+</tr>
+
+<tr>
+<td>Name</td>
+<td>${data.receiver.name}</td>
+</tr>
+
+<tr>
+<td>Country</td>
+<td>${data.receiver.country}</td>
+</tr>
+
+<tr>
+<td>Email</td>
+<td>${data.receiver.email}</td>
+</tr>
+
+<tr>
+<td>Address</td>
+<td>${data.receiver.direction}</td>
+</tr>
+
+<tr>
+<td>Phone</td>
+<td>${data.receiver.phone}</td>
+</tr>
+
+<tr>
+<th colspan="2">🌍 LIVE DESTINATION MAP</th>
+</tr>
+
+<tr>
+<td colspan="2">
+
+<iframe
+style="width:100%;height:320px;border:0;border-radius:10px;"
+src="https://www.google.com/maps?q=${encodeURIComponent(data.final.map)}&output=embed">
+</iframe>
+
+</td>
+</tr>
+
+<tr>
+<th colspan="2">📦 PACKAGE IMAGE</th>
+</tr>
+
+<tr>
+<td colspan="2">
+<img src="${data.image}" class="package-image">
+</td>
+</tr>
+
 `;
 
-});
-
-document.getElementById("resultsBody").innerHTML = html;
 document.getElementById("resultsTable").style.display = "table";
 
 }
 
+/* =========================
+   AUTO START
+========================= */
+
 window.onload = () => {
+
 startLive();
+
+const p = new URLSearchParams(window.location.search);
+
+const t = p.get("tracking");
+
+if(t && trackingData[t]){
+
+document.getElementById("trackingId").value = t;
+
+trackPackage();
+
+}
+
 };
 
 </script>
